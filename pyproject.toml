@@ -9,6 +9,7 @@ description = "Educational repository for gradient methods in nonlinear regressi
 requires-python = ">=3.11"
 dependencies = [
     "numpy",
+    "matplotlib",
     "torch",
 ]
 

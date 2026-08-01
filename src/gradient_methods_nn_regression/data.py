@@ -8,18 +8,19 @@ import numpy as np
 from numpy.typing import NDArray
 
 
-def true_regression_function(x: NDArray[np.float64]) -> NDArray[np.float64]:
-    """Evaluate the noiseless target function."""
+def true_regression_function(x: np.ndarray) -> np.ndarray:
+    """Compute noiseless targets f*(x) for each input row."""
     if x.ndim != 2:
         raise ValueError("Input array must be 2-dimensional.")
     if x.shape[1] < 6:
         raise ValueError("Input array must have at least six features.")
 
+    x6 = x[:, :6]
     output = (
-        1.5 * np.sin(x[:, 0])
-        + 0.8 * (x[:, 1]**2 - 1)
-        + 0.7 * np.tanh(x[:, 2] * x[:, 3])
-        + 0.5 * x[:, 4] * x[:, 5]
+        1.5 * np.sin(x6[:, 0])
+        + 0.8 * (x6[:, 1] ** 2 - 1)
+        + 0.7 * np.tanh(x6[:, 2] * x6[:, 3])
+        + 0.5 * x6[:, 4] * x6[:, 5]
     )
     return output
 
@@ -30,11 +31,12 @@ def generate_synthetic_regression_data(
     n_features: int,
     noise_std: float,
     seed: Optional[int] = None,
+    dtype: np.dtype = np.float64,
 ) -> tuple[
-    NDArray[np.float64],
-    NDArray[np.float64],
-    NDArray[np.float64],
-    NDArray[np.float64],
+    np.ndarray,
+    np.ndarray,
+    np.ndarray,
+    np.ndarray,
 ]:
     """Generate features, noisy targets, noiseless targets, and noise."""
     if n_samples <= 0:
@@ -44,12 +46,16 @@ def generate_synthetic_regression_data(
     if noise_std < 0:
         raise ValueError("noise_std must be non-negative.")
 
+    out_dtype = np.dtype(dtype)
+    if out_dtype.kind != "f":
+        raise ValueError("dtype must be a floating-point dtype.")
+
     rng = np.random.default_rng(seed)
 
-    x = rng.normal(loc=0.0, scale=1.0, size=(n_samples, n_features)).astype(np.float64)
-    y_true = true_regression_function(x)
-    noise = rng.normal(loc=0.0, scale=noise_std, size=n_samples).astype(np.float64)
-    y_noisy = y_true + noise
+    x = rng.normal(loc=0.0, scale=1.0, size=(n_samples, n_features)).astype(out_dtype, copy=False)
+    y_true = true_regression_function(x).astype(out_dtype, copy=False)
+    noise = rng.normal(loc=0.0, scale=noise_std, size=n_samples).astype(out_dtype, copy=False)
+    y_noisy = (y_true + noise).astype(out_dtype, copy=False)
 
     return x, y_noisy, y_true, noise
 

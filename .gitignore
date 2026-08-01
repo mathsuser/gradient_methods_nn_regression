@@ -12,3 +12,7 @@ dist/
 .DS_Store
 
 .vscode/
+
+# Generated experimental datasets (keep directory structure only)
+data/generated/*
+!data/generated/.gitkeep

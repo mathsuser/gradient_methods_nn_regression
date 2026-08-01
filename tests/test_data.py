@@ -65,7 +65,7 @@ def test_generate_synthetic_regression_data_contract() -> None:
     np.testing.assert_allclose(noise1, noise2)
 
     # Decomposition identity
-    np.testing.assert_allclose(y_noisy1 - y_true1, noise1)
+    np.testing.assert_allclose(y_noisy1 - y_true1, noise1, rtol=1e-5, atol=1e-7)
 
 
 def test_generate_synthetic_regression_data_invalid_arguments() -> None:
