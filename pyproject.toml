@@ -8,7 +8,7 @@ version = "0.1.0"
 description = "Educational repository for gradient methods in nonlinear regression."
 requires-python = ">=3.11"
 dependencies = [
-    "numpy",
+    "numpy<2",
     "matplotlib",
     "torch",
 ]
@@ -17,6 +17,11 @@ dependencies = [
 dev = [
     "pytest",
 ]
+notebook = [
+    "jupyterlab",
+    "ipykernel",
+]
+
 
 [tool.setuptools]
 package-dir = {"" = "src"}
