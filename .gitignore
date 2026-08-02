@@ -12,6 +12,7 @@ dist/
 .DS_Store
 
 .vscode/
+.github/copilot-instructions.md
 
 # Generated experimental datasets (keep directory structure only)
 data/generated/*
