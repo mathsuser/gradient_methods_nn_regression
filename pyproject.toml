@@ -6,22 +6,36 @@ build-backend = "setuptools.build_meta"
 name = "gradient-methods-nn-regression"
 version = "0.1.0"
 description = "Educational repository for gradient methods in nonlinear regression."
+readme = "README.md"
+license = { text = "MIT" }
 requires-python = ">=3.11"
 dependencies = [
     "numpy<2",
     "matplotlib",
     "torch",
 ]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Education",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
 
 [project.optional-dependencies]
 dev = [
     "pytest",
+    "build",
 ]
 notebook = [
     "jupyterlab",
     "ipykernel",
 ]
 
+[tool.pytest.ini_options]
+testpaths = ["tests"]
 
 [tool.setuptools]
 package-dir = {"" = "src"}
