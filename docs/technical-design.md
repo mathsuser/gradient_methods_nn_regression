@@ -112,18 +112,21 @@ The repository is developed in the following order:
 
 1. define and validate the nonlinear data-generating process;
 2. generate fixed training, validation and test datasets;
-3. implement the fixed neural-network architecture;
-4. validate paired initialisation and training-accounting rules;
-5. run the learning-rate pilot;
-6. execute the baseline comparison across five seeds;
-7. aggregate convergence, error and runtime results;
-8. introduce controlled stress cases, beginning with irrelevant ambient dimensions.
+3. implement the fixed neural-network architecture in the reusable model module;
+4. validate paired initialisation, trainable-parameter counting and training-accounting rules;
+5. add reusable regression evaluation metrics for function-estimation and noisy-prediction error;
+6. run the learning-rate pilot;
+7. execute the baseline comparison across five seeds;
+8. aggregate convergence, error and runtime results;
+9. introduce controlled stress cases, beginning with irrelevant ambient dimensions.
 
 Current progress status:
 
 - Step 1: complete.
 - Step 2: complete.
-- Step 3: ongoing.
+- Step 3: complete.
+- Step 4: complete.
+- Step 5: complete.
 
 Only one experimental factor is varied at a time.
 

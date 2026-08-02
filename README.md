@@ -14,10 +14,14 @@ Educational repository for studying optimisation and error decomposition on a sy
 ## Project layout
 
 - src/gradient_methods_nn_regression/data.py: true function + dataset generator
+- src/gradient_methods_nn_regression/model.py: fixed shallow regression network architecture
+- src/gradient_methods_nn_regression/metrics.py: evaluation metrics and basic accounting helpers
 - configs/baseline.json: locked baseline assumptions (sizes, seeds, dtype, noise, paths)
 - experiments/00_dataset_exploration.py: lightweight exploration helpers
 - experiments/01_dataset_checks.py: baseline dataset generation + manifest + diagnostics
 - tests/test_data.py: focused tests for function and generator contract
+- tests/test_model.py: model architecture and initialization contract tests
+- tests/test_metrics.py: regression metric helper tests
 
 ## Outputs
 
