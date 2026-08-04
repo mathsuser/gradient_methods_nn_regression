@@ -25,15 +25,9 @@
     "optimizer": "SGD",
     "momentum": 0.0,
     "weight_decay": 0.0,
-    "batch_sizes": {
-      "full_batch_gd": 5000,
-      "sgd_256": 256,
-      "sgd_32": 32
-    },
     "model_seeds": [0, 1, 2, 3, 4],
-    "shuffle_seed_offset": 1000,
-    "learning_rate_pilot_grid": [0.001, 0.003, 0.01, 0.03, 0.1],
-    "epochs": 100
+    "sampling_seed_offset": 1000,
+    "learning_rate_pilot_grid": [0.001, 0.003, 0.01, 0.03, 0.1]
   },
   "paths": {
     "generated_data_dir": "data/generated",

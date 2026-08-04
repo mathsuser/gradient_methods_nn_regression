@@ -6,7 +6,8 @@ Educational repository for studying optimisation and error decomposition on a sy
 
 - Synthetic data-generating process with known ground-truth function
 - Dataset generator using NumPy Generator API
-- Baseline experiment configuration in JSON
+- Baseline configuration in JSON for the fixed regression problem
+- Experiment configuration in JSON for explicit sampling-method comparisons
 - Dataset checks script that generates train/validation/test splits
 - Dataset diagnostics: distributions, scatter, feature summaries, decomposition checks
 - Test suite with pytest
@@ -16,12 +17,15 @@ Educational repository for studying optimisation and error decomposition on a sy
 - src/gradient_methods_nn_regression/data.py: true function + dataset generator
 - src/gradient_methods_nn_regression/model.py: fixed shallow regression network architecture
 - src/gradient_methods_nn_regression/metrics.py: evaluation metrics and basic accounting helpers
-- configs/baseline.json: locked baseline assumptions (sizes, seeds, dtype, noise, paths)
+- src/gradient_methods_nn_regression/training.py: explicit sampling-based training loop utilities
+- configs/baseline.json: locked baseline assumptions for data, model, optimiser, seeds, and shared paths
+- configs/experiments/week1_gradient_methods.json: explicit week-1 experiment methods and training targets
 - experiments/00_dataset_exploration.py: lightweight exploration helpers
 - experiments/01_dataset_checks.py: baseline dataset generation + manifest + diagnostics
 - tests/test_data.py: focused tests for function and generator contract
 - tests/test_model.py: model architecture and initialization contract tests
 - tests/test_metrics.py: regression metric helper tests
+- tests/test_training.py: explicit sampling and training-accounting contract tests
 
 ## Outputs
 

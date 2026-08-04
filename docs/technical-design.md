@@ -1,11 +1,14 @@
 # Gradient Methods for Neural-Network Regression
 This repository contains a controlled study of gradient-based training methods on a synthetic nonlinear regression problem.
 
-The experiment compares:
+The experiment compares explicit sampling regimes:
 
 - full-batch gradient descent;
-- mini-batch stochastic gradient descent with batch size 256;
-- mini-batch stochastic gradient descent with batch size 32.
+- single-observation SGD with replacement;
+- mini-batch SGD with replacement at batch size 32;
+- mini-batch SGD with replacement at batch size 256;
+- random reshuffling SGD at batch size 32;
+- random reshuffling SGD at batch size 256.
 All methods train the same neural-network architecture from paired initial parameters and are evaluated on the same generated datasets.
 
 ## Research objective
@@ -66,10 +69,10 @@ The initial experiment uses:
 | Activation | `tanh` |
 | Loss | Mean squared error |
 | Model seeds | 0, 1, 2, 3, 4 |
-| Training budget | 100 epochs |
+| Training budget | 100 data-equivalent passes |
 
 
-A short learning-rate pilot is run before the main comparison. The baseline uses the largest stable learning rate shared by all three batch regimes.
+A short learning-rate pilot is run before the main comparison. The baseline uses the largest stable learning rate shared by the compared sampling regimes.
 
 For each model seed, the methods start from identical parameters. Training and evaluation datasets remain fixed across methods.
 
@@ -110,23 +113,16 @@ Neural-network optimisation error is not observed exactly because the global emp
 ## Experimental sequence
 The repository is developed in the following order:
 
-1. define and validate the nonlinear data-generating process;
-2. generate fixed training, validation and test datasets;
-3. implement the fixed neural-network architecture in the reusable model module;
-4. validate paired initialisation, trainable-parameter counting and training-accounting rules;
-5. add reusable regression evaluation metrics for function-estimation and noisy-prediction error;
-6. run the learning-rate pilot;
-7. execute the baseline comparison across five seeds;
-8. aggregate convergence, error and runtime results;
-9. introduce controlled stress cases, beginning with irrelevant ambient dimensions.
-
-Current progress status:
-
-- Step 1: complete.
-- Step 2: complete.
-- Step 3: complete.
-- Step 4: complete.
-- Step 5: complete.
+1. [x] define and validate the nonlinear data-generating process;
+2. [x] generate fixed training, validation and test datasets;
+3. [x] implement the fixed neural-network architecture in the reusable model module;
+4. [x] validate paired initialisation, trainable-parameter counting and training-accounting rules;
+5. [x] add reusable regression evaluation metrics for function-estimation and noisy-prediction error;
+6. [x] define the explicit sampling-method experiment configuration and its validation checks;
+7. [ ] run the learning-rate pilot;
+8. [ ] execute the baseline comparison across five seeds;
+9. [ ] aggregate convergence, error and runtime results;
+10. [ ] introduce controlled stress cases, beginning with irrelevant ambient dimensions.
 
 Only one experimental factor is varied at a time.
 

@@ -1,0 +1,49 @@
+{
+  "experiment": {
+    "name": "week1_gradient_methods",
+    "description": "Baseline comparison of explicit sampling regimes for gradient-based regression training.",
+    "methods": {
+      "full_batch_gd": {
+        "method_name": "full_batch_gd",
+        "sampling_method": "full_batch",
+        "batch_size": 5000
+      },
+      "single_observation_sgd": {
+        "method_name": "single_observation_sgd",
+        "sampling_method": "single_with_replacement",
+        "batch_size": 1
+      },
+      "minibatch_with_replacement_b32": {
+        "method_name": "minibatch_with_replacement_b32",
+        "sampling_method": "minibatch_with_replacement",
+        "batch_size": 32
+      },
+      "minibatch_with_replacement_b256": {
+        "method_name": "minibatch_with_replacement_b256",
+        "sampling_method": "minibatch_with_replacement",
+        "batch_size": 256
+      },
+      "random_reshuffling_b32": {
+        "method_name": "random_reshuffling_b32",
+        "sampling_method": "random_reshuffling",
+        "batch_size": 32
+      },
+      "random_reshuffling_b256": {
+        "method_name": "random_reshuffling_b256",
+        "sampling_method": "random_reshuffling",
+        "batch_size": 256
+      }
+    },
+    "training": {
+      "data_equivalent_passes": 100,
+      "target_examples_processed": 500000,
+      "evaluation_every_examples": 5000,
+      "include_initial_state": true,
+      "learning_rate_selection": "largest_stable_common_rate",
+      "pilot_model_seed": 0
+    },
+    "paths": {
+      "results_dir": "results/week1_gradient_methods"
+    }
+  }
+}
