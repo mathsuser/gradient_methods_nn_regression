@@ -166,7 +166,7 @@ def train_model(
     batch_size: int,
     step_budget: int,
     sampling_seed: int,
-    evaluation_every_examples: int,
+    evaluation_every_examples: int, # evaluation_every_examples exists because epoch is not equally meaningful for all sampling methods.
     evaluation_data: tuple[
         torch.Tensor,
         torch.Tensor,
