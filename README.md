@@ -10,6 +10,7 @@ Educational repository for studying optimisation and error decomposition on a sy
 - Experiment configuration in JSON for explicit sampling-method comparisons
 - Dataset checks script that generates train/validation/test splits
 - Dataset diagnostics: distributions, scatter, feature summaries, decomposition checks
+- Sampling-aware learning-rate pilot across six methods with a common-budget comparison
 - Test suite with pytest
 
 ## Project layout
@@ -22,6 +23,7 @@ Educational repository for studying optimisation and error decomposition on a sy
 - configs/experiments/week1_gradient_methods.json: explicit week-1 experiment methods and training targets
 - experiments/00_dataset_exploration.py: lightweight exploration helpers
 - experiments/01_dataset_checks.py: baseline dataset generation + manifest + diagnostics
+- experiments/02_learning_rate_pilot.py: week-1 pilot for shared stable learning-rate selection
 - tests/test_data.py: focused tests for function and generator contract
 - tests/test_model.py: model architecture and initialization contract tests
 - tests/test_metrics.py: regression metric helper tests
@@ -34,6 +36,9 @@ Educational repository for studying optimisation and error decomposition on a sy
 - data/generated/baseline_test.npz
 - data/generated/baseline_manifest.json
 - results/figures/*.png (Dataset diagnostic figures)
+- results/raw/week1_gradient_methods/learning_rate_selection.json (machine-readable LR decision)
+- results/raw/week1_gradient_methods/learning_rate_pilot_histories/*.json (pilot checkpoint histories)
+- results/figures/week1_gradient_methods/*.png (pilot convergence and diagnostic figures)
 
 ## Quick start
 
@@ -42,7 +47,14 @@ conda activate gradient-methods-nn-regression
 python -m pip install -e ".[dev]"
 pytest -q
 python experiments/01_dataset_checks.py
+python experiments/02_learning_rate_pilot.py
 ```
+
+## Week 1 pilot status
+
+- Pilot budget: 10 data-equivalent passes (50,000 examples), checkpoints every 5,000 examples.
+- Selected common learning rate: 0.03.
+- Selection artifact: results/raw/week1_gradient_methods/learning_rate_selection.json.
 
 ## Reproducibility notes
 

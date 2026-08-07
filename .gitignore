@@ -17,3 +17,10 @@ dist/
 # Generated experimental datasets (keep directory structure only)
 data/generated/*
 !data/generated/.gitkeep
+
+# Pilot and experiment outputs
+results/figures/week1_gradient_methods/
+results/raw/week1_gradient_methods/learning_rate_pilot_histories/
+
+# Keep the machine-readable learning-rate decision artifact tracked
+!results/raw/week1_gradient_methods/learning_rate_selection.json

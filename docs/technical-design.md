@@ -74,6 +74,8 @@ The initial experiment uses:
 
 A short learning-rate pilot is run before the main comparison. The baseline uses the largest stable learning rate shared by the compared sampling regimes.
 
+Pilot status (Week 1): completed with a shared selected learning rate of 0.03 under a 10-pass (50,000 examples) budget and 5,000-example checkpoint cadence.
+
 For each model seed, the methods start from identical parameters. Training and evaluation datasets remain fixed across methods.
 
 ## Evaluation
@@ -119,7 +121,7 @@ The repository is developed in the following order:
 4. [x] validate paired initialisation, trainable-parameter counting and training-accounting rules;
 5. [x] add reusable regression evaluation metrics for function-estimation and noisy-prediction error;
 6. [x] define the explicit sampling-method experiment configuration and its validation checks;
-7. [ ] run the learning-rate pilot;
+7. [x] run the learning-rate pilot;
 8. [ ] execute the baseline comparison across five seeds;
 9. [ ] aggregate convergence, error and runtime results;
 10. [ ] introduce controlled stress cases, beginning with irrelevant ambient dimensions.
@@ -142,6 +144,12 @@ The detailed design, assumptions and implementation workflow are documented in:
 ```
 docs/technical-design.md
 ```
+
+Pilot outputs are written to:
+
+- `results/raw/week1_gradient_methods/learning_rate_selection.json`
+- `results/raw/week1_gradient_methods/learning_rate_pilot_histories/`
+- `results/figures/week1_gradient_methods/`
 
 ## Scope
 The repository is an educational and empirical study, not a general optimisation library or production machine-learning framework.
