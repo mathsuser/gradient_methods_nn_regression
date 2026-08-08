@@ -10,9 +10,10 @@ build/
 dist/
 *.egg-info/
 .DS_Store
-
+AGENTS.md
 .vscode/
 .github/copilot-instructions.md
+docs/local-output-log.md
 
 # Generated experimental datasets (keep directory structure only)
 data/generated/*
@@ -21,6 +22,11 @@ data/generated/*
 # Pilot and experiment outputs
 results/figures/week1_gradient_methods/
 results/raw/week1_gradient_methods/learning_rate_pilot_histories/
+results/raw/week1_gradient_methods/baseline_comparison_runs/
+results/raw/week1_gradient_methods/baseline_comparison_manifest.json
+results/raw/week1_gradient_methods/baseline_analysis/
+results/raw/week1_dimension_stress/
+results/figures/week1_dimension_stress/
 
 # Keep the machine-readable learning-rate decision artifact tracked
 !results/raw/week1_gradient_methods/learning_rate_selection.json

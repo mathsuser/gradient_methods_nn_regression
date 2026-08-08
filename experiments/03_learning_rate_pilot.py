@@ -335,6 +335,7 @@ def run_pilot_for_grid(
     momentum = float(baseline_cfg["optimisation"]["momentum"])
     weight_decay = float(baseline_cfg["optimisation"]["weight_decay"])
 
+    # Use a short 10-pass budget to screen learning rates before the full baseline.
     n_train = int(x_train.shape[0])
     pilot_passes = 10
     pilot_budget_examples = pilot_passes * n_train
@@ -359,6 +360,7 @@ def run_pilot_for_grid(
         method_name = str(method_cfg.get("method_name", method_key))
         sampling_method = str(method_cfg["sampling_method"])
         batch_size = int(method_cfg["batch_size"])
+        # Give each method a deterministic sampling stream for reproducible pilot runs.
         sampling_seed = sampling_seed_offset + method_index
         sampling_seeds[method_name] = sampling_seed
 
