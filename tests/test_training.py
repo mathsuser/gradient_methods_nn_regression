@@ -38,9 +38,10 @@ CANONICAL_CHECKPOINT_KEYS = {
 SMOKE_METHOD_CONFIGS = [
     ("full_batch_gd", "full_batch", 256),
     ("single_observation_sgd", "single_with_replacement", 1),
+    ("single_observation_random_reshuffling", "random_reshuffling", 1),
     ("minibatch_with_replacement_b32", "minibatch_with_replacement", 32),
-    ("minibatch_with_replacement_b256", "minibatch_with_replacement", 256),
     ("random_reshuffling_b32", "random_reshuffling", 32),
+    ("minibatch_with_replacement_b256", "minibatch_with_replacement", 256),
     ("random_reshuffling_b256", "random_reshuffling", 256),
 ]
 
@@ -253,6 +254,73 @@ def test_random_reshuffling_covers_each_epoch_once_and_is_reproducible() -> None
     assert torch.equal(torch.sort(epoch2).values, torch.arange(5))
 
 
+def test_random_reshuffling_b1_covers_one_complete_epoch() -> None:
+    batches = list(
+        iter_batch_indices(
+            n_observations=5,
+            sampling_method="random_reshuffling",
+            batch_size=1,
+            target_examples_processed=5,
+            sampling_seed=7,
+        )
+    )
+
+    assert len(batches) == 5
+    assert all(batch.actual_batch_size == 1 for batch in batches)
+    assert [batch.epoch for batch in batches] == [1, 1, 1, 1, 1]
+    assert [batch.step_within_epoch for batch in batches] == [1, 2, 3, 4, 5]
+
+    concatenated = torch.cat([batch.indices for batch in batches])
+    assert torch.equal(torch.sort(concatenated).values, torch.arange(5))
+
+
+def test_random_reshuffling_b1_covers_two_complete_epochs() -> None:
+    batches = list(
+        iter_batch_indices(
+            n_observations=5,
+            sampling_method="random_reshuffling",
+            batch_size=1,
+            target_examples_processed=10,
+            sampling_seed=7,
+        )
+    )
+
+    assert len(batches) == 10
+    assert all(batch.actual_batch_size == 1 for batch in batches)
+    assert [batch.epoch for batch in batches[:5]] == [1, 1, 1, 1, 1]
+    assert [batch.epoch for batch in batches[5:]] == [2, 2, 2, 2, 2]
+
+    epoch1 = torch.cat([batch.indices for batch in batches[:5]])
+    epoch2 = torch.cat([batch.indices for batch in batches[5:]])
+    assert torch.equal(torch.sort(epoch1).values, torch.arange(5))
+    assert torch.equal(torch.sort(epoch2).values, torch.arange(5))
+
+
+def test_random_reshuffling_b1_reproducibility_with_identical_seed() -> None:
+    first = list(
+        iter_batch_indices(
+            n_observations=5,
+            sampling_method="random_reshuffling",
+            batch_size=1,
+            target_examples_processed=10,
+            sampling_seed=7,
+        )
+    )
+    second = list(
+        iter_batch_indices(
+            n_observations=5,
+            sampling_method="random_reshuffling",
+            batch_size=1,
+            target_examples_processed=10,
+            sampling_seed=7,
+        )
+    )
+
+    assert [batch.indices.tolist() for batch in first] == [
+        batch.indices.tolist() for batch in second
+    ]
+
+
 @pytest.mark.parametrize(
     (
         "method",
@@ -287,6 +355,7 @@ def test_random_reshuffling_covers_each_epoch_once_and_is_reproducible() -> None
             None,
         ),
         ("random_reshuffling", "random_reshuffling", 3, 24, 8, 24, 2, 4),
+        ("random_reshuffling_b1", "random_reshuffling", 1, 12, 12, 12, 1, 12),
     ],
 )
 def test_train_model_accounting_and_canonical_schema(
@@ -358,6 +427,45 @@ def test_train_model_accounting_and_canonical_schema(
     assert final["step_within_epoch"] == expected_step_within_epoch
     assert final["nominal_batch_size"] == batch_size
     assert final["data_equivalent_passes"] == pytest.approx(expected_examples / n_train)
+
+
+def test_train_model_random_reshuffling_b1_accounting_per_update() -> None:
+    n_train = 12
+    x_train, y_train, x_eval, y_eval, y_fun_eval, model = _make_small_training_case(
+        n_train=n_train,
+        seed=0,
+    )
+    optimiser = _make_sgd(model)
+
+    history = train_model(
+        model=model,
+        optimiser=optimiser,
+        loss_function=torch.nn.functional.mse_loss,
+        training_data=(x_train, y_train),
+        evaluation_data=(x_eval, y_eval, y_fun_eval),
+        method="random_reshuffling_b1",
+        sampling_method="random_reshuffling",
+        batch_size=1,
+        target_examples_processed=n_train,
+        sampling_seed=7,
+        evaluation_every_examples=1,
+    )
+
+    update_rows = history[1:]
+    assert len(update_rows) == n_train
+    for record in update_rows:
+        assert record["actual_batch_size"] == 1
+        assert record["step"] == record["cumulative_examples_processed"]
+        assert record["epoch"] == 1
+        assert record["step_within_epoch"] == record["step"]
+        assert record["data_equivalent_passes"] == pytest.approx(
+            record["cumulative_examples_processed"] / n_train
+        )
+
+    final = history[-1]
+    assert final["step"] == n_train
+    assert final["cumulative_examples_processed"] == n_train
+    assert final["data_equivalent_passes"] == pytest.approx(1.0)
 
 
 @pytest.mark.parametrize("start_in_training_mode", [True, False])

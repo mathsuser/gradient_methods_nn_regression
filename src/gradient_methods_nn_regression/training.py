@@ -137,9 +137,9 @@ def iter_batch_indices(
         return
 
     if sampling_method == "random_reshuffling":
-        if not (1 < batch_size <= n_observations):
+        if not (1 <= batch_size <= n_observations):
             raise ValueError(
-                "random_reshuffling requires 1 < batch_size <= n_observations"
+                "random_reshuffling requires 1 <= batch_size <= n_observations"
             )
 
         epoch = 0
