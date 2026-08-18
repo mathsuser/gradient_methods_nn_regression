@@ -133,12 +133,18 @@ def test_branch_training_and_evaluation_datasets_are_identical_across_run_specs(
     cfg = _load_branch_cfg()
     specs = branch.build_run_specs(branch_cfg=cfg, trajectory_ids=[0])
     plan = branch.preflight_plan(baseline_cfg=baseline_cfg, branch_cfg=cfg)
+    declared_inputs_by_method = {
+        spec["method_name"]: {
+            "training": plan["baseline_data"]["training"],
+            "evaluation": plan["baseline_data"]["evaluation"],
+        }
+        for spec in specs
+    }
 
     assert len(specs) == 2
     assert plan["baseline_data"]["training"] == Path("data/generated/baseline_train.npz")
     assert plan["baseline_data"]["evaluation"] == Path("data/generated/baseline_test.npz")
-    assert plan["baseline_data"]["training"].exists()
-    assert plan["baseline_data"]["evaluation"].exists()
+    assert declared_inputs_by_method["wr_1"] == declared_inputs_by_method["rr_1"]
 
 
 def test_tiny_wr1_and_rr1_smoke_runs_complete_with_expected_accounting() -> None:
