@@ -1,0 +1,133 @@
+{
+  "experiment": {
+    "name": "sampling_law_nn_branch",
+    "description": "Focused WR-1 versus RR-1 branch using the baseline nonlinear regression problem and the shared training loop.",
+    "methods": {
+      "wr_1": {
+        "method_name": "wr_1",
+        "sampling_method": "single_with_replacement",
+        "batch_size": 1
+      },
+      "rr_1": {
+        "method_name": "rr_1",
+        "sampling_method": "random_reshuffling",
+        "batch_size": 1
+      }
+    },
+    "training": {
+      "model_seed": 0,
+      "learning_rate": 0.03,
+      "target_examples_processed": 50000,
+      "evaluation_every_examples": 5000,
+      "include_initial_state": true,
+      "early_stopping": false
+    },
+    "sampling_seeds": {
+      "trajectory_ids": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29
+      ],
+      "smoke_trajectory_ids": [
+        0
+      ],
+      "by_method": {
+        "wr_1": [
+          91000,
+          91001,
+          91002,
+          91003,
+          91004,
+          91005,
+          91006,
+          91007,
+          91008,
+          91009,
+          91010,
+          91011,
+          91012,
+          91013,
+          91014,
+          91015,
+          91016,
+          91017,
+          91018,
+          91019,
+          91020,
+          91021,
+          91022,
+          91023,
+          91024,
+          91025,
+          91026,
+          91027,
+          91028,
+          91029
+        ],
+        "rr_1": [
+          92000,
+          92001,
+          92002,
+          92003,
+          92004,
+          92005,
+          92006,
+          92007,
+          92008,
+          92009,
+          92010,
+          92011,
+          92012,
+          92013,
+          92014,
+          92015,
+          92016,
+          92017,
+          92018,
+          92019,
+          92020,
+          92021,
+          92022,
+          92023,
+          92024,
+          92025,
+          92026,
+          92027,
+          92028,
+          92029
+        ]
+      }
+    },
+    "paths": {
+      "raw_dir": "results/raw/sampling_law_branch/nn_wr1_rr1",
+      "figures_dir": "results/figures/sampling_law_branch/nn_wr1_rr1"
+    }
+  }
+}
