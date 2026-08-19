@@ -101,6 +101,50 @@ def test_branch_sampling_seed_plan_is_explicit_and_stable() -> None:
     assert seed_cfg["by_method"]["rr_1"] == list(range(92000, 92030))
 
 
+def test_full_branch_run_specs_cover_all_configured_trajectories() -> None:
+    cfg = _load_branch_cfg()
+    trajectory_ids = [
+        int(value)
+        for value in cfg["experiment"]["sampling_seeds"]["trajectory_ids"]
+    ]
+
+    specs = branch.build_run_specs(branch_cfg=cfg, trajectory_ids=trajectory_ids)
+
+    assert len(specs) == 60
+    assert {
+        (spec["method_name"], spec["trajectory_id"], spec["sampling_seed"])
+        for spec in specs
+    } == {
+        *{("wr_1", trajectory_id, 91000 + trajectory_id) for trajectory_id in range(30)},
+        *{("rr_1", trajectory_id, 92000 + trajectory_id) for trajectory_id in range(30)},
+    }
+
+
+def test_run_level_progress_messages_are_lightweight() -> None:
+    spec = {
+        "method_name": "rr_1",
+        "trajectory_id": 7,
+        "sampling_seed": 92007,
+    }
+
+    assert branch._format_progress_start(8, 60, spec) == (
+        "[8/60] START rr_1 trajectory=7 seed=92007"
+    )
+    assert branch._format_progress_done(
+        run_index=8,
+        total_runs=60,
+        spec=spec,
+        run_seconds=12.34,
+        total_elapsed_seconds=120.0,
+        eta_seconds=780.0,
+    ) == (
+        "[8/60] DONE rr_1 trajectory=7\n"
+        "run=12.3s\n"
+        "total_elapsed=2.0min\n"
+        "ETA=13.0min"
+    )
+
+
 def _requires_torch() -> None:
     if importlib.util.find_spec("torch") is None:
         pytest.skip("torch is not available in this Python environment")

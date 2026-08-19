@@ -314,7 +314,13 @@ def run_branch(
     if write_outputs:
         output_root.mkdir(parents=True, exist_ok=True)
 
-    for spec in build_run_specs(branch_cfg=branch_cfg, trajectory_ids=trajectory_ids):
+    specs = build_run_specs(branch_cfg=branch_cfg, trajectory_ids=trajectory_ids)
+    total_runs = len(specs)
+    completed_run_seconds: list[float] = []
+
+    for run_index, spec in enumerate(specs, start=1):
+        print(_format_progress_start(run_index, total_runs, spec), flush=True)
+        progress_run_start = time.perf_counter()
         model = TinyRegressionModel().to(device=device, dtype=torch_dtype)
         model.load_state_dict(reference_state)
         loaded_checksum = state_checksum(model.state_dict())
@@ -416,6 +422,24 @@ def run_branch(
             write_history_csv(enriched_history, history_path)
             write_json(metadata, metadata_path)
 
+        progress_run_seconds = time.perf_counter() - progress_run_start
+        completed_run_seconds.append(progress_run_seconds)
+        remaining_runs = total_runs - run_index
+        average_completed_run_seconds = sum(completed_run_seconds) / len(
+            completed_run_seconds
+        )
+        print(
+            _format_progress_done(
+                run_index=run_index,
+                total_runs=total_runs,
+                spec=spec,
+                run_seconds=progress_run_seconds,
+                total_elapsed_seconds=time.perf_counter() - branch_start,
+                eta_seconds=average_completed_run_seconds * remaining_runs,
+            ),
+            flush=True,
+        )
+
         run_records.append(
             {
                 "trajectory_id": spec["trajectory_id"],
@@ -461,8 +485,42 @@ def run_branch(
         "runs": run_records,
     }
     if write_outputs:
-        write_json(manifest, output_root / "preflight_manifest.json")
+        manifest_name = (
+            "preflight_manifest.json"
+            if manifest["mode"] == "preflight"
+            else "branch_manifest.json"
+        )
+        write_json(manifest, output_root / manifest_name)
     return manifest
+
+
+def _format_progress_start(
+    run_index: int,
+    total_runs: int,
+    spec: dict[str, Any],
+) -> str:
+    return (
+        f"[{run_index}/{total_runs}] START {spec['method_name']} "
+        f"trajectory={spec['trajectory_id']} seed={spec['sampling_seed']}"
+    )
+
+
+def _format_progress_done(
+    *,
+    run_index: int,
+    total_runs: int,
+    spec: dict[str, Any],
+    run_seconds: float,
+    total_elapsed_seconds: float,
+    eta_seconds: float,
+) -> str:
+    return (
+        f"[{run_index}/{total_runs}] DONE {spec['method_name']} "
+        f"trajectory={spec['trajectory_id']}\n"
+        f"run={run_seconds:.1f}s\n"
+        f"total_elapsed={total_elapsed_seconds / 60:.1f}min\n"
+        f"ETA={eta_seconds / 60:.1f}min"
+    )
 
 
 def _project_runtime_30_per_method(run_records: list[dict[str, Any]]) -> dict[str, float]:
@@ -528,10 +586,19 @@ def main() -> None:
         action="store_true",
         help="Run the configured tiny preflight subset under the full branch budget.",
     )
+    parser.add_argument(
+        "--full",
+        action="store_true",
+        help="Run all configured sampling-law branch trajectories.",
+    )
     args = parser.parse_args()
 
     baseline_cfg = load_json(BASELINE_CONFIG_PATH)
     branch_cfg = load_json(BRANCH_CONFIG_PATH)
+
+    selected_modes = sum([args.plan_only, args.preflight, args.full])
+    if selected_modes != 1:
+        raise SystemExit("Choose exactly one of --plan-only, --preflight, or --full.")
 
     if args.plan_only:
         print(
@@ -558,7 +625,19 @@ def main() -> None:
         print(json.dumps(to_jsonable(manifest), indent=2))
         return
 
-    raise SystemExit("Choose --plan-only or --preflight. Full branch run is not enabled.")
+    if args.full:
+        trajectory_ids = [
+            int(value)
+            for value in branch_cfg["experiment"]["sampling_seeds"]["trajectory_ids"]
+        ]
+        manifest = run_branch(
+            baseline_cfg=baseline_cfg,
+            branch_cfg=branch_cfg,
+            trajectory_ids=trajectory_ids,
+            write_outputs=True,
+        )
+        print(json.dumps(to_jsonable(manifest), indent=2))
+        return
 
 
 if __name__ == "__main__":
