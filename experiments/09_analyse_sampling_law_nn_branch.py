@@ -463,9 +463,54 @@ def terminal_comparison_rows(summary_rows: list[dict[str, Any]]) -> list[dict[st
     return rows
 
 
-def plot_function_mse_trajectory(runs: list[dict[str, Any]], output_path: Path) -> None:
-    fig, axis = plt.subplots(figsize=(7.0, 4.2))
-    for method, color in [("wr_1", "tab:blue"), ("rr_1", "tab:green")]:
+def checkpoint_difference_rows(
+    checkpoint_rows: list[dict[str, Any]],
+    *,
+    metric: str = "function_mse",
+    exclude_checkpoint_zero: bool = True,
+) -> list[dict[str, Any]]:
+    by_key = {
+        (row["method"], row["metric"], int(row["checkpoint_examples"])): row
+        for row in checkpoint_rows
+    }
+    checkpoints = sorted(
+        {
+            int(row["checkpoint_examples"])
+            for row in checkpoint_rows
+            if row["metric"] == metric
+        }
+    )
+    if exclude_checkpoint_zero:
+        checkpoints = [checkpoint for checkpoint in checkpoints if checkpoint != 0]
+
+    rows: list[dict[str, Any]] = []
+    for checkpoint in checkpoints:
+        wr = by_key[("wr_1", metric, checkpoint)]
+        rr = by_key[("rr_1", metric, checkpoint)]
+        rows.append(
+            {
+                "checkpoint_examples": checkpoint,
+                "wr_mean": wr["mean"],
+                "rr_mean": rr["mean"],
+                "rr_minus_wr_mean": float(rr["mean"]) - float(wr["mean"]),
+                "wr_median": wr["median"],
+                "rr_median": rr["median"],
+                "rr_minus_wr_median": float(rr["median"]) - float(wr["median"]),
+                "wr_std": wr["std"],
+                "rr_std": rr["std"],
+                "rr_minus_wr_std": float(rr["std"]) - float(wr["std"]),
+            }
+        )
+    return rows
+
+
+def function_mse_trajectory_series(
+    runs: list[dict[str, Any]],
+    *,
+    exclude_checkpoint_zero: bool = False,
+) -> dict[str, dict[str, Any]]:
+    series: dict[str, dict[str, Any]] = {}
+    for method in METHODS:
         method_runs = [run for run in runs if run["method"] == method]
         checkpoints = [
             int(row["checkpoint_examples"]) for row in method_runs[0]["history"]
@@ -477,9 +522,34 @@ def plot_function_mse_trajectory(runs: list[dict[str, Any]], output_path: Path) 
             ],
             dtype=float,
         )
-        median = np.median(values, axis=0)
-        q25 = np.quantile(values, 0.25, axis=0)
-        q75 = np.quantile(values, 0.75, axis=0)
+        if exclude_checkpoint_zero:
+            keep = [index for index, checkpoint in enumerate(checkpoints) if checkpoint != 0]
+            checkpoints = [checkpoints[index] for index in keep]
+            values = values[:, keep]
+        series[method] = {
+            "checkpoints": checkpoints,
+            "median": np.median(values, axis=0),
+            "q25": np.quantile(values, 0.25, axis=0),
+            "q75": np.quantile(values, 0.75, axis=0),
+        }
+    return series
+
+
+def plot_function_mse_zoomed_trajectory(
+    runs: list[dict[str, Any]],
+    output_path: Path,
+) -> None:
+    fig, axis = plt.subplots(figsize=(7.0, 4.2))
+    series = function_mse_trajectory_series(
+        runs,
+        exclude_checkpoint_zero=True,
+    )
+    for method, color in [("wr_1", "tab:blue"), ("rr_1", "tab:green")]:
+        method_series = series[method]
+        checkpoints = method_series["checkpoints"]
+        median = method_series["median"]
+        q25 = method_series["q25"]
+        q75 = method_series["q75"]
         axis.plot(checkpoints, median, label=method, color=color)
         axis.fill_between(checkpoints, q25, q75, color=color, alpha=0.18, linewidth=0)
     axis.set_xlabel("examples processed")
@@ -491,22 +561,68 @@ def plot_function_mse_trajectory(runs: list[dict[str, Any]], output_path: Path) 
     plt.close(fig)
 
 
-def plot_terminal_function_mse_ecdf(
+def plot_function_mse_median_difference(
+    difference_rows: list[dict[str, Any]],
+    output_path: Path,
+) -> None:
+    fig, axis = plt.subplots(figsize=(7.0, 4.0))
+    checkpoints = [int(row["checkpoint_examples"]) for row in difference_rows]
+    differences = [float(row["rr_minus_wr_median"]) for row in difference_rows]
+    axis.axhline(0.0, color="black", linewidth=1.0, alpha=0.65)
+    axis.plot(checkpoints, differences, color="tab:purple", marker="o")
+    axis.set_xlabel("examples processed")
+    axis.set_ylabel("RR median - WR median function MSE")
+    fig.tight_layout()
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(output_path, dpi=150)
+    plt.close(fig)
+
+
+def plot_terminal_function_mse_points(
     terminal_rows: list[dict[str, Any]],
     output_path: Path,
 ) -> None:
-    fig, axis = plt.subplots(figsize=(6.2, 4.2))
-    for method, color in [("wr_1", "tab:blue"), ("rr_1", "tab:green")]:
-        values = sorted(
+    fig, axis = plt.subplots(figsize=(5.8, 4.2))
+    method_positions = {"wr_1": 1.0, "rr_1": 2.0}
+    colors = {"wr_1": "tab:blue", "rr_1": "tab:green"}
+    box_values: list[list[float]] = []
+    labels: list[str] = []
+
+    for method in METHODS:
+        values = [
             float(row["evaluation_function_mse"])
             for row in terminal_rows
             if row["method"] == method
+        ]
+        box_values.append(values)
+        labels.append(method)
+        offsets = np.linspace(-0.12, 0.12, len(values)) if values else []
+        x_values = [method_positions[method] + float(offset) for offset in offsets]
+        axis.scatter(
+            x_values,
+            values,
+            color=colors[method],
+            alpha=0.75,
+            s=24,
+            edgecolors="none",
+            zorder=3,
         )
-        y = np.arange(1, len(values) + 1, dtype=float) / len(values)
-        axis.step(values, y, where="post", label=method, color=color)
-    axis.set_xlabel("terminal evaluation function MSE")
-    axis.set_ylabel("empirical cumulative probability")
-    axis.legend()
+
+    boxplot_kwargs = {
+        "positions": [method_positions[method] for method in METHODS],
+        "widths": 0.42,
+        "showfliers": False,
+        "medianprops": {"color": "black", "linewidth": 1.4},
+        "boxprops": {"color": "0.35"},
+        "whiskerprops": {"color": "0.35"},
+        "capprops": {"color": "0.35"},
+    }
+    try:
+        axis.boxplot(box_values, tick_labels=labels, **boxplot_kwargs)
+    except TypeError:
+        axis.boxplot(box_values, labels=labels, **boxplot_kwargs)
+    axis.set_xlabel("method")
+    axis.set_ylabel("terminal evaluation function MSE")
     fig.tight_layout()
     output_path.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(output_path, dpi=150)
@@ -535,32 +651,45 @@ def analyse_sampling_law_branch(
     checkpoint_rows = checkpoint_summary_rows(runs)
     terminal_summary = terminal_summary_rows(terminal_rows)
     comparison_rows = terminal_comparison_rows(terminal_summary)
+    checkpoint_difference = checkpoint_difference_rows(checkpoint_rows)
 
     checkpoint_summary_path = analysis_dir / "checkpoint_summary.csv"
+    checkpoint_difference_path = analysis_dir / "checkpoint_wr_rr_difference.csv"
     terminal_runs_path = analysis_dir / "terminal_runs.csv"
     terminal_summary_path = analysis_dir / "terminal_summary.csv"
     terminal_comparison_path = analysis_dir / "terminal_wr_rr_comparison.csv"
-    trajectory_figure_path = figure_dir / "function_mse_vs_examples.png"
-    terminal_ecdf_path = figure_dir / "terminal_function_mse_ecdf.png"
+    zoomed_trajectory_figure_path = figure_dir / "function_mse_vs_examples_zoomed.png"
+    median_difference_figure_path = figure_dir / "function_mse_median_difference.png"
+    terminal_points_figure_path = figure_dir / "terminal_function_mse_points.png"
     manifest_path = analysis_dir / "analysis_manifest.json"
 
     write_csv(checkpoint_rows, checkpoint_summary_path)
+    write_csv(checkpoint_difference, checkpoint_difference_path)
     write_csv(terminal_rows, terminal_runs_path)
     write_csv(terminal_summary, terminal_summary_path)
     write_csv(comparison_rows, terminal_comparison_path)
-    plot_function_mse_trajectory(runs, trajectory_figure_path)
-    plot_terminal_function_mse_ecdf(terminal_rows, terminal_ecdf_path)
+    plot_function_mse_zoomed_trajectory(
+        runs,
+        zoomed_trajectory_figure_path,
+    )
+    plot_function_mse_median_difference(
+        checkpoint_difference,
+        median_difference_figure_path,
+    )
+    plot_terminal_function_mse_points(terminal_rows, terminal_points_figure_path)
 
     manifest = {
         "ok": True,
         "integrity": audit,
         "outputs": {
             "checkpoint_summary_csv": checkpoint_summary_path,
+            "checkpoint_wr_rr_difference_csv": checkpoint_difference_path,
             "terminal_runs_csv": terminal_runs_path,
             "terminal_summary_csv": terminal_summary_path,
             "terminal_wr_rr_comparison_csv": terminal_comparison_path,
-            "function_mse_trajectory_png": trajectory_figure_path,
-            "terminal_function_mse_ecdf_png": terminal_ecdf_path,
+            "function_mse_vs_examples_zoomed_png": zoomed_trajectory_figure_path,
+            "function_mse_median_difference_png": median_difference_figure_path,
+            "terminal_function_mse_points_png": terminal_points_figure_path,
         },
     }
     write_json(manifest, manifest_path)

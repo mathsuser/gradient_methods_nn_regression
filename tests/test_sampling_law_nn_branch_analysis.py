@@ -275,6 +275,12 @@ def test_terminal_extraction_selects_declared_final_checkpoint(tmp_path: Path) -
     }
 
 
+def test_declared_branch_terminal_checkpoint_is_50000() -> None:
+    cfg = analysis.load_json(analysis.BRANCH_CONFIG_PATH)
+
+    assert analysis.expected_checkpoint_examples(cfg)[-1] == 50000
+
+
 def test_summary_statistics_have_expected_values(tmp_path: Path) -> None:
     _, runs = _valid_runs(tmp_path)
     terminal = analysis.terminal_runs_rows(runs, final_checkpoint=10)
@@ -291,3 +297,29 @@ def test_summary_statistics_have_expected_values(tmp_path: Path) -> None:
     assert wr_function["std"] == pytest.approx(math.sqrt(0.5))
     assert wr_function["min"] == pytest.approx(1.1)
     assert wr_function["max"] == pytest.approx(2.1)
+
+
+def test_checkpoint_difference_rows_have_expected_sign_and_skip_initial(
+    tmp_path: Path,
+) -> None:
+    _, runs = _valid_runs(tmp_path)
+    checkpoint_rows = analysis.checkpoint_summary_rows(runs)
+
+    difference_rows = analysis.checkpoint_difference_rows(checkpoint_rows)
+
+    assert [row["checkpoint_examples"] for row in difference_rows] == [5, 10]
+    assert all(row["rr_minus_wr_median"] > 0 for row in difference_rows)
+    assert difference_rows[0]["rr_minus_wr_median"] == pytest.approx(0.1)
+    assert difference_rows[0]["rr_minus_wr_mean"] == pytest.approx(0.1)
+
+
+def test_zoomed_trajectory_series_excludes_checkpoint_zero(tmp_path: Path) -> None:
+    _, runs = _valid_runs(tmp_path)
+
+    series = analysis.function_mse_trajectory_series(
+        runs,
+        exclude_checkpoint_zero=True,
+    )
+
+    assert series["wr_1"]["checkpoints"] == [5, 10]
+    assert series["rr_1"]["checkpoints"] == [5, 10]
