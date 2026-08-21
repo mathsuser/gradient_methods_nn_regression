@@ -1,0 +1,139 @@
+{
+  "experiment": {
+    "name": "week1_gradient_methods_v3",
+    "description": "Seven-method factorial sampling-law by estimator-size pilot for the Stage-1 nonlinear regression baseline.",
+    "methods": {
+      "full_batch_gd": {
+        "method_name": "full_batch_gd",
+        "sampling_method": "full_batch",
+        "batch_size": 5000
+      },
+      "wr_b1": {
+        "method_name": "wr_b1",
+        "sampling_method": "single_with_replacement",
+        "batch_size": 1
+      },
+      "wr_b32": {
+        "method_name": "wr_b32",
+        "sampling_method": "minibatch_with_replacement",
+        "batch_size": 32
+      },
+      "wr_b256": {
+        "method_name": "wr_b256",
+        "sampling_method": "minibatch_with_replacement",
+        "batch_size": 256
+      },
+      "rr_b1": {
+        "method_name": "rr_b1",
+        "sampling_method": "random_reshuffling",
+        "batch_size": 1
+      },
+      "rr_b32": {
+        "method_name": "rr_b32",
+        "sampling_method": "random_reshuffling",
+        "batch_size": 32
+      },
+      "rr_b256": {
+        "method_name": "rr_b256",
+        "sampling_method": "random_reshuffling",
+        "batch_size": 256
+      }
+    },
+    "training": {
+      "data_equivalent_passes": 100,
+      "target_examples_processed": 500000,
+      "evaluation_every_examples": 5000,
+      "include_initial_state": true,
+      "early_stopping": false,
+      "learning_rate_selection": "largest_stable_common_rate"
+    },
+    "pilot": {
+      "model_seed": 0,
+      "data_equivalent_passes": 10,
+      "target_examples_processed": 50000,
+      "evaluation_every_examples": 5000,
+      "learning_rates": [0.001, 0.003, 0.01, 0.03, 0.1],
+      "material_reduction_ratio": 0.9,
+      "selection_rule": "largest candidate accepted by all methods",
+      "grid_extension_factor": 3,
+      "preflight_learning_rate": 0.03,
+      "preflight_data_equivalent_passes": 1,
+      "preflight_target_examples_processed": 5000,
+      "preflight_evaluation_every_examples": 5000,
+      "data_splits": {
+        "training": "baseline_train.npz",
+        "evaluation": "baseline_validation.npz"
+      },
+      "sampling_seeds": {
+        "full_batch_gd": 30000,
+        "wr_b1": 31000,
+        "wr_b32": 32000,
+        "wr_b256": 33000,
+        "rr_b1": 41000,
+        "rr_b32": 42000,
+        "rr_b256": 43000
+      }
+    },
+    "future_baseline": {
+      "model_seeds": [0, 1, 2, 3, 4],
+      "sampling_seeds_by_method_and_model_seed": {
+        "full_batch_gd": {
+          "0": 50000,
+          "1": 50001,
+          "2": 50002,
+          "3": 50003,
+          "4": 50004
+        },
+        "wr_b1": {
+          "0": 51000,
+          "1": 51001,
+          "2": 51002,
+          "3": 51003,
+          "4": 51004
+        },
+        "wr_b32": {
+          "0": 52000,
+          "1": 52001,
+          "2": 52002,
+          "3": 52003,
+          "4": 52004
+        },
+        "wr_b256": {
+          "0": 53000,
+          "1": 53001,
+          "2": 53002,
+          "3": 53003,
+          "4": 53004
+        },
+        "rr_b1": {
+          "0": 61000,
+          "1": 61001,
+          "2": 61002,
+          "3": 61003,
+          "4": 61004
+        },
+        "rr_b32": {
+          "0": 62000,
+          "1": 62001,
+          "2": 62002,
+          "3": 62003,
+          "4": 62004
+        },
+        "rr_b256": {
+          "0": 63000,
+          "1": 63001,
+          "2": 63002,
+          "3": 63003,
+          "4": 63004
+        }
+      }
+    },
+    "paths": {
+      "raw_dir": "results/raw/week1_gradient_methods_v3",
+      "figures_dir": "results/figures/week1_gradient_methods_v3",
+      "learning_rate_pilot_histories_dir": "results/raw/week1_gradient_methods_v3/learning_rate_pilot_histories",
+      "preflight_dir": "results/raw/week1_gradient_methods_v3/preflight",
+      "learning_rate_selection": "results/raw/week1_gradient_methods_v3/learning_rate_selection.json"
+    }
+  }
+}

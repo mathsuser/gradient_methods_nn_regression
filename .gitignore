@@ -29,6 +29,10 @@ results/raw/week1_dimension_stress/
 results/figures/week1_dimension_stress/
 results/raw/sampling_law_branch/
 results/figures/sampling_law_branch/
+results/raw/week1_gradient_methods_v3/learning_rate_pilot_histories/
+results/raw/week1_gradient_methods_v3/preflight/
+results/figures/week1_gradient_methods_v3/
 
 # Keep the machine-readable learning-rate decision artifact tracked
 !results/raw/week1_gradient_methods/learning_rate_selection.json
+!results/raw/week1_gradient_methods_v3/learning_rate_selection.json
