@@ -27,10 +27,15 @@ results/raw/week1_gradient_methods/baseline_comparison_manifest.json
 results/raw/week1_gradient_methods/baseline_analysis/
 results/raw/week1_dimension_stress/
 results/figures/week1_dimension_stress/
+results/raw/week1_dimension_stress_v3/
+results/figures/week1_dimension_stress_v3/
 results/raw/sampling_law_branch/
 results/figures/sampling_law_branch/
 results/raw/week1_gradient_methods_v3/learning_rate_pilot_histories/
 results/raw/week1_gradient_methods_v3/preflight/
+results/raw/week1_gradient_methods_v3/baseline_preflight/
+results/raw/week1_gradient_methods_v3/baseline_comparison_runs/
+results/raw/week1_gradient_methods_v3/baseline_analysis/
 results/figures/week1_gradient_methods_v3/
 
 # Keep the machine-readable learning-rate decision artifact tracked
